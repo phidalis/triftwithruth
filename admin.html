@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Trift With Ruth</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: #f5f0f7; padding: 0; }
+    .toast-container { position:fixed;bottom:2rem;right:2rem;z-index:5000;display:flex;flex-direction:column;gap:0.75rem; }
+
+    /* Section visibility */
+    .admin-section { display: none; }
+    .admin-section.default-section { display: block; }
+
+    /* Chart bars */
+    .chart-bars { display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 0.5rem; }
+    .chart-bar-wrap { flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end; }
+    .chart-bar { width:100%;border-radius:4px 4px 0 0;background:linear-gradient(to top,rgba(232,119,154,0.3),var(--rose));transition:height 1s cubic-bezier(0.4,0,0.2,1);min-height:4px; }
+    .chart-label { font-size:10px;color:var(--muted); }
+
+    /* Two col layout */
+    .two-col { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem; }
+    @media(max-width:900px){ .two-col{grid-template-columns:1fr;} }
+
+    /* Order status select */
+    .order-status-select {
+      padding:0.3rem 0.6rem;border-radius:8px;border:1px solid var(--blush);
+      font-size:0.8rem;font-family:'DM Sans',sans-serif;background:#fff;cursor:pointer;
+    }
+
+    /* Stat cards animation */
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .stat-card { animation:fadeInUp 0.5s ease both; }
+
+    /* Section card */
+    .section-wrapper { display:flex;flex-direction:column;gap:1.5rem; }
+
+    /* Inline form row */
+    .inline-form { display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap; }
+    .inline-form .form-group { flex:1;min-width:140px; }
+
+    /* Slide preview */
+    .slide-bg-preview { width:100%;height:140px;object-fit:cover;border-radius:12px;margin-top:0.75rem;display:none; }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">Trift with Ruth</div>
+      <div class="sidebar-sub">Admin Console</div>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="nav-section-label">Overview</li>
+      <li><a href="#" class="active" data-section="dashboard"><span class="icon">📊</span> Dashboard</a></li>
+      <li><a href="#" data-section="orders"><span class="icon">📦</span> Orders</a></li>
+      <li><a href="#" data-section="customers"><span class="icon">👥</span> Customers</a></li>
+
+      <li class="nav-section-label">Catalogue</li>
+      <li><a href="#" data-section="products"><span class="icon">👗</span> All Products</a></li>
+      <li><a href="#" data-section="add-product"><span class="icon">➕</span> Add Product</a></li>
+      <li><a href="#" data-section="categories"><span class="icon">📁</span> Categories</a></li>
+
+      <li class="nav-section-label">Storefront</li>
+      <li><a href="#" data-section="hero-slides"><span class="icon">🖼️</span> Hero Slides</a></li>
+      <li><a href="#" data-section="videos"><span class="icon">🎬</span> Lookbook Videos</a></li>
+      <li><a href="#" data-section="promotions"><span class="icon">🏷️</span> Promotions</a></li>
+
+      <li class="nav-section-label">Settings</li>
+      <li><a href="#" data-section="settings"><span class="icon">⚙️</span> Store Settings</a></li>
+      <li><a href="index.html" target="_blank"><span class="icon">🏠</span> View Store</a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="admin-user">
+        <div class="admin-avatar" id="admin-avatar-letter">R</div>
+        <div>
+          <div class="admin-name" id="admin-user-name">Loading…</div>
+          <div class="admin-role">Store Owner</div>
+        </div>
+      </div>
+      <button id="admin-signout-btn" style="margin-top:0.75rem;width:100%;padding:0.5rem;border-radius:8px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:0.8rem;cursor:pointer;border:none">
+        🚪 Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile sidebar backdrop -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ── Main ── -->
+  <div style="display:flex;flex-direction:column;min-height:100vh;overflow:auto">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button id="sidebar-toggle" style="font-size:1.3rem;cursor:pointer;background:none;border:none;display:none">☰</button>
+        <div class="page-heading" id="page-heading">Dashboard</div>
+      </div>
+      <div class="topbar-actions">
+        <a href="index.html" target="_blank" class="topbar-btn ghost">🏠 View Store</a>
+        <button class="topbar-btn primary" onclick="triggerSection('add-product')">＋ Add Product</button>
+      </div>
+    </div>
+
+    <div class="admin-main">
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: DASHBOARD                      -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section default-section" id="section-dashboard">
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" style="margin-bottom:1.5rem">
+          <div class="stat-card s1" style="animation-delay:0s">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="stat-revenue">—</div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-change up" id="stat-pending">— pending</div>
+          </div>
+          <div class="stat-card s2" style="animation-delay:0.1s">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="stat-orders">—</div>
+            <div class="stat-label">Total Orders</div>
+          </div>
+          <div class="stat-card s3" style="animation-delay:0.2s">
+            <div class="stat-icon">👗</div>
+            <div class="stat-value" id="stat-products">—</div>
+            <div class="stat-label">Products Listed</div>
+          </div>
+          <div class="stat-card s4" style="animation-delay:0.3s">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-customers">—</div>
+            <div class="stat-label">Customers</div>
+          </div>
+        </div>
+
+        <!-- Chart + Top -->
+        <div class="two-col" style="margin-bottom:1.5rem">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Weekly Revenue</div>
+              <span style="font-size:0.78rem;color:var(--muted)">Last 7 days</span>
+            </div>
+            <div class="chart-bars" id="revenue-bars"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">Quick Actions</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.75rem">
+              <button class="topbar-btn primary" style="justify-content:center" onclick="triggerSection('add-product')">➕ Add New Product</button>
+              <button class="topbar-btn ghost" style="justify-content:center" onclick="triggerSection('hero-slides')">🖼️ Manage Hero Slides</button>
+              <button class="topbar-btn ghost" style="justify-content:center" onclick="triggerSection('orders')">📦 View All Orders</button>
+              <button class="topbar-btn ghost" style="justify-content:center" onclick="triggerSection('categories')">📁 Manage Categories</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title">Recent Orders</div>
+            <button class="topbar-btn ghost" style="font-size:0.8rem;padding:0.45rem 1rem" onclick="triggerSection('orders')">View All</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody id="dashboard-orders-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: ORDERS                         -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-orders">
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title">All Orders</div>
+            <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+              <select id="order-status-filter" class="order-status-select" style="padding:0.45rem 0.75rem">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <div class="table-search">
+                <span class="icon">🔍</span>
+                <input type="text" placeholder="Search orders..." id="order-search">
+              </div>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr><th>Order ID</th><th>Customer</th><th>Email</th><th>Date</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="orders-tbody-main">
+                <tr><td colspan="7" style="text-align:center;padding:2rem">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: CUSTOMERS                      -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-customers">
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title">All Customers</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr><th>Customer</th><th>Phone</th><th>Joined</th><th>Total Spent</th><th>Orders</th></tr>
+              </thead>
+              <tbody id="customers-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:2rem">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:0.5rem">
+          ℹ️ Customers appear here once they create an account on the store.
+        </p>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: ALL PRODUCTS                   -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-products">
+        <div class="admin-table-card">
+          <div class="table-header">
+            <div class="table-title">All Products</div>
+            <div style="display:flex;gap:0.75rem;align-items:center">
+              <button class="topbar-btn primary" style="font-size:0.82rem;padding:0.5rem 1rem" onclick="triggerSection('add-product')">➕ Add Product</button>
+              <div class="table-search">
+                <span class="icon">🔍</span>
+                <input type="text" placeholder="Search products..." id="product-search-main">
+              </div>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="products-tbody-main">
+                <tr><td colspan="6" style="text-align:center;padding:2rem">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: ADD PRODUCT                    -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-add-product">
+        <form id="product-form" novalidate>
+          <!-- Basic Info -->
+          <div class="form-card">
+            <div class="form-card-title">📝 Basic Information</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="p-name">Product Name *</label>
+                <input class="form-input" id="p-name" type="text" placeholder="e.g. Rose Ruffle Dress" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-category">Category *</label>
+                <select class="form-select" id="p-category" required>
+                  <option value="">Select category</option>
+                  <option value="Dresses">Dresses</option>
+                  <option value="Tops">Tops</option>
+                  <option value="Skirts">Skirts</option>
+                  <option value="Knitwear">Knitwear</option>
+                  <option value="Outerwear">Outerwear</option>
+                  <option value="Accessories">Accessories</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-price">Price (KSh) *</label>
+                <input class="form-input" id="p-price" type="number" placeholder="2800" required min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-old-price">Original Price (KSh)</label>
+                <input class="form-input" id="p-old-price" type="number" placeholder="3500 (optional)" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-sizes">Available Sizes</label>
+                <input class="form-input" id="p-sizes" type="text" placeholder="XS, S, M, L, XL">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-badge">Badge Label</label>
+                <select class="form-select" id="p-badge">
+                  <option value="">None</option>
+                  <option value="New">New</option>
+                  <option value="Sale">Sale</option>
+                  <option value="Best Seller">Best Seller</option>
+                  <option value="Limited">Limited</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="p-stock">Stock Quantity</label>
+                <input class="form-input" id="p-stock" type="number" placeholder="10" min="0">
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;padding-top:1.5rem">
+                <input type="checkbox" id="p-in-stock" checked style="width:18px;height:18px;accent-color:var(--rose)">
+                <label class="form-label" for="p-in-stock" style="margin:0;cursor:pointer">In Stock / Active</label>
+              </div>
+              <div class="form-group full">
+                <label class="form-label" for="p-description">Description *</label>
+                <textarea class="form-textarea" id="p-description" placeholder="Describe the product — fabric, fit, styling suggestions..." required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="form-card">
+            <div class="form-card-title">🖼️ Product Images</div>
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Images are uploaded to Cloudinary — the returned URL is saved with the product in Firestore.</p>
+            <div class="upload-zone" id="upload-zone">
+              <div class="upload-icon">📸</div>
+              <div class="upload-title">Drop images here or click to upload</div>
+              <div class="upload-sub">PNG, JPG, WebP · Multiple allowed</div>
+            </div>
+            <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+            <div class="upload-previews" id="upload-previews"></div>
+          </div>
+
+          <!-- Video Upload -->
+          <div class="form-card">
+            <div class="form-card-title">🎬 Product Videos (optional)</div>
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Upload product styling or demo videos. They appear in the product modal alongside images. Uploaded via Cloudinary unsigned upload.</p>
+            <div class="upload-zone" id="video-zone">
+              <div class="upload-icon">🎬</div>
+              <div class="upload-title">Drop videos here or click to upload</div>
+              <div class="upload-sub">MP4, MOV, WebM · Multiple allowed</div>
+            </div>
+            <input type="file" id="video-input" multiple accept="video/*" style="display:none">
+            <div class="upload-previews" id="video-previews"></div>
+          </div>
+
+          <!-- Submit -->
+          <div style="display:flex;gap:1rem;justify-content:flex-end">
+            <button type="button" class="topbar-btn ghost" onclick="document.getElementById('product-form').reset();document.getElementById('upload-previews').innerHTML='';document.getElementById('video-previews').innerHTML=''">
+              Clear Form
+            </button>
+            <button type="submit" class="topbar-btn primary" id="form-submit-btn" style="padding:0.8rem 2rem;font-size:1rem">
+              Save Product
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: CATEGORIES                     -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-categories">
+        <div class="two-col">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title" id="cat-form-title">📁 Add Category</div>
+              <form id="category-form">
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Category Name *</label>
+                  <input class="form-input" id="cat-name" type="text" placeholder="e.g. Dresses" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Description</label>
+                  <input class="form-input" id="cat-desc" type="text" placeholder="Short description...">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Category Image</label>
+                  <input class="form-input" id="cat-image" type="file" accept="image/*">
+                  <p style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem">This image appears in the categories section on the homepage.</p>
+                </div>
+                <button type="submit" class="topbar-btn primary" style="width:100%;justify-content:center">Save Category</button>
+              </form>
+            </div>
+          </div>
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">All Categories</div>
+              <div id="categories-list">
+                <p style="color:var(--muted)">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: HERO SLIDES                    -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-hero-slides">
+        <div class="two-col">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">🖼️ Add Hero Slide</div>
+              <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem">Slides you add here appear in the homepage carousel automatically.</p>
+              <form id="hero-slide-form">
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Background Image (Upload)</label>
+                  <input class="form-input" id="slide-bg-file" type="file" accept="image/*"
+                    onchange="if(this.files[0]){const r=new FileReader();r.onload=e=>{const p=document.getElementById('slide-bg-preview');p.src=e.target.result;p.style.display='block'};r.readAsDataURL(this.files[0])}">
+                  <img id="slide-bg-preview" class="slide-bg-preview" alt="Preview">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">— OR — Background Image URL</label>
+                  <input class="form-input" id="slide-bg-url" type="url" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Tag Line *</label>
+                  <input class="form-input" id="slide-tag" type="text" placeholder="e.g. New Collection" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Headline * (use &lt;em&gt; for italic)</label>
+                  <input class="form-input" id="slide-title" type="text" placeholder="Dressed in &lt;em&gt;Blush&lt;/em&gt;" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea" id="slide-desc" style="min-height:70px" placeholder="Short slide description..."></textarea>
+                </div>
+                <div class="form-grid" style="margin-bottom:1rem">
+                  <div class="form-group">
+                    <label class="form-label">CTA Button 1</label>
+                    <input class="form-input" id="slide-cta1" type="text" placeholder="Shop Now">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">CTA Button 2</label>
+                    <input class="form-input" id="slide-cta2" type="text" placeholder="Watch Story">
+                  </div>
+                </div>
+                <button type="submit" class="topbar-btn primary" style="width:100%;justify-content:center">Add Slide to Homepage</button>
+              </form>
+            </div>
+          </div>
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">Current Slides</div>
+              <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">Toggle the checkbox to show/hide a slide. Drag to reorder (coming soon).</p>
+              <div id="hero-slides-list">
+                <p style="color:var(--muted)">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: LOOKBOOK VIDEOS                -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-videos">
+        <div class="two-col">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">🎬 Add Lookbook Video</div>
+              <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem">Videos uploaded here appear on the homepage Lookbook section. Upload via Cloudinary or paste a direct URL.</p>
+              <form id="video-form">
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Upload Video File</label>
+                  <input class="form-input" id="vf-file" type="file" accept="video/*">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">— OR — Video URL</label>
+                  <input class="form-input" id="vf-url" type="url" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Thumbnail Image (optional)</label>
+                  <input class="form-input" id="vf-thumb" type="file" accept="image/*">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Title *</label>
+                  <input class="form-input" id="vf-title" type="text" placeholder="e.g. Summer '26 Lookbook" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Tag (e.g. Lookbook, Haul, Styling Tips)</label>
+                  <input class="form-input" id="vf-tag" type="text" placeholder="Lookbook">
+                </div>
+                <div class="form-group" style="margin-bottom:1.25rem">
+                  <label class="form-label">Short Description</label>
+                  <input class="form-input" id="vf-desc" type="text" placeholder="14 outfits · 8 min watch">
+                </div>
+                <button type="submit" class="topbar-btn primary" style="width:100%;justify-content:center">Add Video</button>
+              </form>
+            </div>
+          </div>
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">Lookbook Videos</div>
+              <div id="videos-list"><p style="color:var(--muted)">Loading...</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: PROMOTIONS                     -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-promotions">
+        <div class="two-col">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">🏷️ Create Promotion</div>
+              <form id="promo-form">
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Promotion Title *</label>
+                  <input class="form-input" id="promo-title" type="text" placeholder="e.g. Summer Sale" required>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Discount Code</label>
+                  <input class="form-input" id="promo-code" type="text" placeholder="e.g. SUMMER20" style="text-transform:uppercase">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Type</label>
+                  <select class="form-select" id="promo-type">
+                    <option value="discount">Discount Code</option>
+                    <option value="banner">Banner Announcement</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Discount % (if discount type)</label>
+                  <input class="form-input" id="promo-discount" type="number" placeholder="20" min="0" max="100">
+                </div>
+                <div class="form-group" style="margin-bottom:1rem">
+                  <label class="form-label">Expiry Date</label>
+                  <input class="form-input" id="promo-expiry" type="date">
+                </div>
+                <button type="submit" class="topbar-btn primary" style="width:100%;justify-content:center">Create Promotion</button>
+              </form>
+            </div>
+          </div>
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">Active Promotions</div>
+              <div id="promos-list"><p style="color:var(--muted)">Loading...</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ -->
+      <!-- SECTION: STORE SETTINGS                 -->
+      <!-- ═══════════════════════════════════════ -->
+      <div class="admin-section" id="section-settings">
+        <div class="form-card" style="max-width:700px">
+          <div class="form-card-title">⚙️ Store Settings</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">These settings control global behaviour of your store, delivery fees, and the scrolling marquee text.</p>
+          <form id="settings-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Store Name</label>
+                <input class="form-input" id="store-name" type="text" placeholder="Trift With Ruth">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Email</label>
+                <input class="form-input" id="store-email" type="email" placeholder="ruth@example.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone / WhatsApp</label>
+                <input class="form-input" id="store-phone" type="tel" placeholder="+254 ...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Currency Label</label>
+                <input class="form-input" id="store-currency" type="text" placeholder="KSh">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Delivery Fee (KSh)</label>
+                <input class="form-input" id="store-delivery-fee" type="number" placeholder="300" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Free Delivery Above (KSh)</label>
+                <input class="form-input" id="store-free-delivery" type="number" placeholder="3000" min="0">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Store Address</label>
+                <input class="form-input" id="store-address" type="text" placeholder="Nairobi, Kenya">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Marquee Text (scrolling banner)</label>
+                <input class="form-input" id="store-marquee" type="text" placeholder="Free Delivery on Orders over KSh 3,000 · New Drops Weekly">
+                <p style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem">Separate items with ·</p>
+              </div>
+            </div>
+            <div style="margin-top:1.5rem;text-align:right">
+              <button type="submit" class="topbar-btn primary" style="padding:0.8rem 2rem">Save Settings</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div><!-- /admin-main -->
+  </div><!-- /main col -->
+</div><!-- /admin-layout -->
+
+<!-- Toast -->
+<div class="toast-container" id="admin-toast"></div>
+
+<script>
+  // Helper exposed globally so HTML onclick attrs work
+  function triggerSection(name) {
+    document.querySelectorAll('.sidebar-nav li a[data-section]').forEach(a => {
+      if (a.dataset.section === name) a.click();
+    });
+  }
+  window.triggerSection = triggerSection;
+
+  // Sidebar open / close helpers (used by admin.js too)
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.openSidebar  = openSidebar;
+  window.closeSidebar = closeSidebar;
+
+  // Mobile sidebar toggle button visibility + wiring
+  const _toggleBtn = document.getElementById('sidebar-toggle');
+  if (_toggleBtn) {
+    _toggleBtn.style.display = 'block';
+    _toggleBtn.addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+  }
+  // Tap outside (overlay) closes sidebar
+  document.getElementById('sidebar-overlay')?.addEventListener('click', closeSidebar);
+</script>
+
+<!-- Firebase + Admin JS (ES module) -->
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>
