@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trift With Ruth — My Account</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+  <style>
+    /* ══════════════════════════════════════════
+       DASHBOARD LAYOUT — Full-Screen Sidebar App
+       ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dash-sidebar: 260px;
+      --dash-topbar: 64px;
+      --blush:     #F9C4D2;
+      --rose:      #E8779A;
+      --deep-rose: #C04F78;
+      --lavender:  #EDD5F3;
+      --cream:     #FDF6F0;
+      --warm-white:#FFF8F5;
+      --petal:     #FBEAF0;
+      --charcoal:  #2C2230;
+      --muted:     #9A8A95;
+      --gold:      #D4A857;
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f5f0f7;
+      color: var(--charcoal);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Dashboard Shell ──────────────────────── */
+    .dash-shell {
+      display: grid;
+      grid-template-columns: var(--dash-sidebar) 1fr;
+      grid-template-rows: var(--dash-topbar) 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ──────────────────────────────── */
+    .dash-sidebar {
+      grid-row: 1 / -1;
+      background: var(--charcoal);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 200;
+      transition: transform var(--transition);
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--blush);
+      text-decoration: none;
+    }
+    .sidebar-logo span { display: block; font-size: 0.65rem; color: rgba(255,255,255,0.35); font-family: 'DM Sans',sans-serif; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-x {
+      display: none;
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      border-radius: 50%;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      cursor: pointer;
+      place-items: center;
+    }
+
+    .sidebar-user {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+    .su-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      display: grid; place-items: center;
+      font-family: 'Playfair Display',serif;
+      font-weight: 800; font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    .su-name { font-weight: 700; font-size: 0.92rem; color: #fff; }
+    .su-email { font-size: 0.73rem; color: rgba(255,255,255,0.4); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .dash-nav { flex: 1; padding: 1rem 0; list-style: none; }
+    .dash-nav .nav-section {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      padding: 0.8rem 1.5rem 0.3rem;
+    }
+    .dash-nav li a, .dash-nav li button {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.78rem 1.5rem;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+      background: none;
+      border: none;
+      font-family: 'DM Sans',sans-serif;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      position: relative;
+      transition: var(--transition);
+    }
+    .dash-nav li a:hover, .dash-nav li button:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .dash-nav li a.active { color: #fff; background: rgba(232,119,154,0.15); }
+    .dash-nav li a.active::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--rose);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--rose);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      min-width: 18px; height: 18px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+      padding: 0 4px;
+    }
+
+    .sidebar-footer {
+      padding: 1.25rem 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+    .sf-signout {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.83rem; font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer; background: none; border: none;
+      font-family: 'DM Sans',sans-serif;
+      transition: var(--transition);
+      width: 100%; text-align: left;
+    }
+    .sf-signout:hover { color: #ff7675; background: rgba(255,118,117,0.1); }
+
+    /* ── Topbar ───────────────────────────────── */
+    .dash-topbar {
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.75rem;
+      border-bottom: 1px solid rgba(232,119,154,0.1);
+      box-shadow: 0 1px 12px rgba(192,79,120,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 1rem; }
+    .topbar-menu-btn {
+      display: none;
+      width: 36px; height: 36px;
+      background: var(--petal);
+      border: none; border-radius: 8px;
+      cursor: pointer; place-items: center; font-size: 1.1rem;
+    }
+    .topbar-page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+    .topbar-cart-btn {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      background: var(--petal);
+      border: none; border-radius: 20px;
+      font-family: 'DM Sans',sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--deep-rose); cursor: pointer;
+      transition: var(--transition);
+    }
+    .topbar-cart-btn:hover { background: var(--blush); }
+    .topbar-home-btn {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      color: #fff; border: none; border-radius: 20px;
+      font-family: 'DM Sans',sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: var(--transition);
+    }
+    .topbar-home-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(192,79,120,0.35); }
+
+    /* ── Main Content ─────────────────────────── */
+    .dash-main {
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    /* ── Section Panels ─────────────────────────── */
+    .dash-section {
+      display: none;
+      min-height: calc(100vh - var(--dash-topbar));
+      padding: 2rem;
+      animation: fadeIn 0.3s ease;
+    }
+    .dash-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Browse Products Section ─────────────── */
+    .browse-filters { margin-bottom: 1.5rem; }
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+    .section-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* Product grid reuse from styles.css */
+    #dash-product-grid { margin-top: 1rem; }
+
+    /* ── Orders Section ──────────────────────── */
+    .orders-empty {
+      text-align: center; padding: 5rem 2rem;
+      color: var(--muted);
+    }
+    .orders-empty .oe-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .orders-empty h3 { font-family: 'Playfair Display',serif; font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--charcoal); }
+
+    .order-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(192,79,120,0.07);
+      margin-bottom: 1rem;
+      transition: var(--transition);
+    }
+    .order-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(192,79,120,0.12); }
+    .order-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+    .order-id { font-weight: 700; font-size: 0.92rem; }
+    .order-date { font-size: 0.8rem; color: var(--muted); }
+    .order-status {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px; font-size: 0.73rem; font-weight: 700;
+    }
+    .order-status.paid { background: #E8F8F0; color: #27AE60; }
+    .order-status.pending { background: #FFF8E7; color: var(--gold); }
+    .order-status.cancelled { background: #FDECEA; color: #E74C3C; }
+    .order-items-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .order-item-thumb {
+      width: 54px; height: 54px; border-radius: 8px;
+      object-fit: cover; background: var(--petal);
+    }
+    .order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--petal); padding-top: 0.75rem; }
+    .order-total { font-weight: 800; color: var(--deep-rose); font-family: 'Playfair Display',serif; }
+
+    /* ── Wishlist Section ────────────────────── */
+    .wishlist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.25rem;
+    }
+    .wish-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(192,79,120,0.07);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+    .wish-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(192,79,120,0.16); }
+    .wish-img { aspect-ratio: 3/4; overflow: hidden; background: var(--petal); }
+    .wish-img img { width: 100%; height: 100%; object-fit: cover; }
+    .wish-info { padding: 0.75rem; }
+    .wish-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+    .wish-price { font-weight: 800; color: var(--deep-rose); font-size: 0.88rem; }
+    .wish-remove {
+      position: absolute; top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 50%; border: none;
+      display: grid; place-items: center;
+      font-size: 0.8rem; cursor: pointer;
+      transition: var(--transition);
+    }
+    .wish-remove:hover { background: #FDECEA; color: #E74C3C; }
+
+    /* ── Cart Section ────────────────────────── */
+    .cart-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
+    .cart-items-panel {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(192,79,120,0.07);
+      overflow: hidden;
+    }
+    .cart-panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(232,119,154,0.1);
+      font-family: 'Playfair Display',serif;
+      font-size: 1rem; font-weight: 700;
+    }
+    .dash-cart-item {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(232,119,154,0.07);
+      transition: var(--transition);
+    }
+    .dash-cart-item:last-child { border-bottom: none; }
+    .dash-cart-item:hover { background: var(--warm-white); }
+    .dci-img { width: 68px; height: 68px; border-radius: 10px; object-fit: cover; background: var(--petal); flex-shrink: 0; }
+    .dci-info { flex: 1; min-width: 0; }
+    .dci-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dci-meta { font-size: 0.78rem; color: var(--muted); }
+    .dci-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .dci-qty-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--petal); border: none;
+      font-size: 1rem; cursor: pointer;
+      display: grid; place-items: center;
+      color: var(--deep-rose); font-weight: 700;
+      transition: var(--transition);
+    }
+    .dci-qty-btn:hover { background: var(--blush); }
+    .dci-qty { font-weight: 700; font-size: 0.88rem; min-width: 20px; text-align: center; }
+    .dci-price { font-weight: 800; color: var(--deep-rose); font-size: 0.92rem; min-width: 70px; text-align: right; flex-shrink: 0; }
+    .dci-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0 0.25rem; transition: var(--transition); }
+    .dci-remove:hover { color: #E74C3C; }
+
+    .cart-summary-panel {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(192,79,120,0.07);
+      padding: 1.5rem; position: sticky; top: 1rem;
+    }
+    .csp-title { font-family: 'Playfair Display',serif; font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .csp-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .csp-row.total { font-weight: 800; font-size: 1rem; border-top: 2px solid var(--petal); padding-top: 0.75rem; margin-top: 0.25rem; }
+    .csp-total-val { color: var(--deep-rose); font-family: 'Playfair Display',serif; }
+    .csp-checkout {
+      width: 100%; padding: 1rem;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      color: #fff; border: none; border-radius: 12px;
+      font-family: 'DM Sans',sans-serif;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      margin-top: 1rem; transition: var(--transition);
+      box-shadow: 0 4px 16px rgba(192,79,120,0.3);
+    }
+    .csp-checkout:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(192,79,120,0.45); }
+    .csp-note { font-size: 0.76rem; color: var(--muted); text-align: center; margin-top: 0.75rem; }
+
+    /* ── Profile Section ─────────────────────── */
+    .profile-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .profile-card {
+      background: #fff; border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 2px 12px rgba(192,79,120,0.07);
+    }
+    .profile-card.full { grid-column: 1 / -1; }
+    .pc-title {
+      font-family: 'Playfair Display',serif;
+      font-size: 1rem; font-weight: 700;
+      margin-bottom: 1.25rem; padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--blush);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .pc-avatar-row { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .pc-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      display: grid; place-items: center;
+      font-family: 'Playfair Display',serif;
+      font-size: 2rem; font-weight: 800; color: #fff;
+    }
+    .pc-form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .pc-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pc-input {
+      padding: 0.8rem 1rem;
+      border: 2px solid var(--blush); border-radius: 10px;
+      font-size: 0.92rem; font-family: 'DM Sans',sans-serif;
+      color: var(--charcoal); outline: none; transition: var(--transition);
+    }
+    .pc-input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(232,119,154,0.12); }
+    .pc-input[readonly] { background: var(--warm-white); color: var(--muted); }
+    .pc-save-btn {
+      padding: 0.8rem 1.5rem;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      color: #fff; border: none; border-radius: 10px;
+      font-family: 'DM Sans',sans-serif;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: var(--transition);
+    }
+    .pc-save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(192,79,120,0.35); }
+
+    /* ── Overlay ─────────────────────────────── */
+    .dash-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(44,34,48,0.5);
+      z-index: 150;
+    }
+    .dash-overlay.open { display: block; }
+
+    /* ── M-Pesa Modal ────────────────────────── */
+    #mpesa-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,34,48,0.6); z-index: 9000; place-items: center; padding: 1rem; }
+
+    /* ── Product Modal ───────────────────────── */
+    .modal-ctas { display: flex; flex-direction: column; gap: 0.75rem; }
+    .btn-continue-browse {
+      padding: 0.75rem 1rem;
+      background: none; border: 2px solid var(--blush);
+      border-radius: 12px; font-family: 'DM Sans',sans-serif;
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--charcoal); cursor: pointer; transition: var(--transition);
+      width: 100%; text-align: center;
+    }
+    .btn-continue-browse:hover { background: var(--petal); border-color: var(--rose); }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 900px) {
+      .dash-shell { grid-template-columns: 1fr; }
+      .dash-sidebar {
+        position: fixed; left: -270px; top: 0;
+        width: 260px; height: 100vh; z-index: 300;
+      }
+      .dash-sidebar.open { left: 0; box-shadow: 8px 0 40px rgba(44,34,48,0.25); }
+      .sidebar-x { display: grid; }
+      .topbar-menu-btn { display: grid; }
+      .cart-layout { grid-template-columns: 1fr; }
+      .profile-layout { grid-template-columns: 1fr; }
+      .profile-card.full { grid-column: 1; }
+    }
+    @media (max-width: 600px) {
+      .dash-section { padding: 1rem; }
+      .wishlist-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .dash-topbar { padding: 0 1rem; }
+      .topbar-home-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Toast ──────────────────────────────────── -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ── Dash Overlay (mobile sidebar close) ─── -->
+<div class="dash-overlay" id="dash-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD SHELL
+     ═══════════════════════════════════════════ -->
+<div class="dash-shell">
+
+  <!-- ── SIDEBAR ──────────────────────────────── -->
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <div class="sidebar-brand">
+      <a href="index.html" class="sidebar-logo">
+        🌸 Trift with Ruth
+        <span>My Account</span>
+      </a>
+      <button class="sidebar-x" onclick="closeSidebar()" aria-label="Close sidebar">✕</button>
+    </div>
+
+    <!-- User info -->
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="su-avatar" id="su-avatar">🌸</div>
+      <div class="su-name" id="su-name">Loading…</div>
+      <div class="su-email" id="su-email"></div>
+    </div>
+
+    <!-- Navigation -->
+    <ul class="dash-nav">
+      <li class="nav-section">Shop</li>
+      <li>
+        <a href="#" class="active" data-section="browse" onclick="showSection('browse', this)">
+          <span class="nav-icon">🛍️</span> Browse Products
+        </a>
+      </li>
+
+      <li class="nav-section">My Account</li>
+      <li>
+        <a href="#" data-section="orders" onclick="showSection('orders', this)">
+          <span class="nav-icon">📦</span> My Orders
+          <span class="nav-badge" id="orders-badge" style="display:none">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-section="wishlist" onclick="showSection('wishlist', this)">
+          <span class="nav-icon">❤️</span> Wishlist
+          <span class="nav-badge" id="wishlist-badge">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-section="cart" onclick="showSection('cart', this)">
+          <span class="nav-icon">🛒</span> My Cart
+          <span class="nav-badge" id="cart-badge-nav">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-section="profile" onclick="showSection('profile', this)">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="sf-signout" id="signout-btn">🚪 Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- ── TOPBAR ──────────────────────────────── -->
+  <header class="dash-topbar">
+    <div class="topbar-left">
+      <button class="topbar-menu-btn" onclick="openSidebar()" aria-label="Open menu">☰</button>
+      <div class="topbar-page-title" id="topbar-title">Browse Products</div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-cart-btn" onclick="showSection('cart', null)">
+        🛒 Cart <span id="topbar-cart-count">0</span>
+      </button>
+      <a href="index.html" class="topbar-home-btn">← Back to Shop</a>
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ───────────────────────── -->
+  <main class="dash-main">
+
+    <!-- ══════════════════════════════════════
+         SECTION: Browse Products
+         ══════════════════════════════════════ -->
+    <section class="dash-section active" id="section-browse">
+      <div class="section-heading">Browse Products</div>
+      <div class="section-sub">All our curated preloved pieces, just for you 🌸</div>
+      <!-- Filters -->
+      <div class="filters" id="dash-product-filters"></div>
+      <!-- Product grid (same as index, populated by app.js) -->
+      <div class="product-grid" id="dash-product-grid" style="margin-top:1rem"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SECTION: My Orders
+         ══════════════════════════════════════ -->
+    <section class="dash-section" id="section-orders">
+      <div class="section-heading">My Orders</div>
+      <div class="section-sub">Track and manage your purchases</div>
+      <div id="orders-content">
+        <div class="orders-empty">
+          <div class="oe-icon">📦</div>
+          <h3>No orders yet</h3>
+          <p style="margin-bottom:1.5rem">When you place an order, it will appear here.</p>
+          <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+            Start Shopping 🌸
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SECTION: Wishlist
+         ══════════════════════════════════════ -->
+    <section class="dash-section" id="section-wishlist">
+      <div class="section-heading">My Wishlist</div>
+      <div class="section-sub">Items you've saved for later 🤍</div>
+      <div id="wishlist-content">
+        <div class="orders-empty">
+          <div class="oe-icon">🤍</div>
+          <h3>Your wishlist is empty</h3>
+          <p style="margin-bottom:1.5rem">Heart products to save them here!</p>
+          <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+            Browse Products 🌸
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SECTION: Cart
+         ══════════════════════════════════════ -->
+    <section class="dash-section" id="section-cart">
+      <div class="section-heading">My Cart</div>
+      <div class="section-sub">Review your items before checkout</div>
+      <div id="cart-section-content">
+        <div class="orders-empty">
+          <div class="oe-icon">🛒</div>
+          <h3>Your cart is empty</h3>
+          <p style="margin-bottom:1.5rem">Add some gorgeous pieces to get started.</p>
+          <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+            Shop Now 🌸
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         SECTION: Profile
+         ══════════════════════════════════════ -->
+    <section class="dash-section" id="section-profile">
+      <div class="section-heading">My Profile</div>
+      <div class="section-sub">Manage your account details</div>
+      <div class="profile-layout">
+
+        <!-- Avatar & info -->
+        <div class="profile-card">
+          <div class="pc-title">👤 Account Info</div>
+          <div class="pc-avatar-row">
+            <div class="pc-avatar" id="profile-avatar">🌸</div>
+            <div>
+              <div style="font-weight:700;font-size:1rem" id="profile-display-name">—</div>
+              <div style="font-size:0.8rem;color:var(--muted)" id="profile-email-display">—</div>
+            </div>
+          </div>
+          <div class="pc-form-group">
+            <label class="pc-label">Display Name</label>
+            <input class="pc-input" type="text" id="profile-name-input" placeholder="Your name">
+          </div>
+          <div class="pc-form-group">
+            <label class="pc-label">Email Address</label>
+            <input class="pc-input" type="email" id="profile-email-input" readonly>
+          </div>
+          <button class="pc-save-btn" onclick="saveProfile()">Save Changes</button>
+        </div>
+
+        <!-- Phone & Address -->
+        <div class="profile-card">
+          <div class="pc-title">📍 Delivery Details</div>
+          <div class="pc-form-group">
+            <label class="pc-label">Phone Number (M-Pesa)</label>
+            <input class="pc-input" type="tel" id="profile-phone" placeholder="e.g. 0712 345 678">
+          </div>
+          <div class="pc-form-group">
+            <label class="pc-label">Delivery Address</label>
+            <input class="pc-input" type="text" id="profile-address" placeholder="e.g. Westlands, Nairobi">
+          </div>
+          <div class="pc-form-group">
+            <label class="pc-label">City</label>
+            <input class="pc-input" type="text" id="profile-city" placeholder="e.g. Nairobi">
+          </div>
+          <button class="pc-save-btn" onclick="saveDelivery()">Save Delivery Info</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="profile-card full">
+          <div class="pc-title">📊 My Activity</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center">
+            <div style="padding:1.25rem;background:var(--petal);border-radius:12px">
+              <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:var(--deep-rose)" id="stat-orders">0</div>
+              <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.25rem">Orders</div>
+            </div>
+            <div style="padding:1.25rem;background:var(--lavender);border-radius:12px">
+              <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#9B59B6" id="stat-wishlist">0</div>
+              <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.25rem">Saved Items</div>
+            </div>
+            <div style="padding:1.25rem;background:#E8F8F0;border-radius:12px">
+              <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#27AE60" id="stat-cart">0</div>
+              <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.25rem">In Cart</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div><!-- /dash-shell -->
+
+<!-- ── M-Pesa Checkout Modal ─────────────────── -->
+<div id="mpesa-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,34,48,0.6);z-index:9000;place-items:center;padding:1rem">
+  <div style="background:#fff;border-radius:20px;padding:2rem;max-width:440px;width:100%;position:relative;max-height:90vh;overflow-y:auto">
+    <button onclick="closeMpesaModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:2.5rem">📱</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-top:0.5rem">Pay with M-Pesa</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-top:0.3rem">You will receive an STK push on your phone</div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:0.4rem">M-Pesa Phone Number</label>
+      <input id="mpesa-phone" type="tel" placeholder="e.g. 0712345678" style="width:100%;padding:0.85rem 1rem;border:2px solid var(--blush);border-radius:10px;font-size:0.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:0.3s" onfocus="this.style.borderColor='var(--rose)'" onblur="this.style.borderColor='var(--blush)'">
+    </div>
+    <div style="margin-bottom:1.5rem">
+      <label style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:0.4rem">Delivery Address</label>
+      <input id="mpesa-address" type="text" placeholder="e.g. Westlands, Nairobi" style="width:100%;padding:0.85rem 1rem;border:2px solid var(--blush);border-radius:10px;font-size:0.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:0.3s" onfocus="this.style.borderColor='var(--rose)'" onblur="this.style.borderColor='var(--blush)'">
+    </div>
+    <div style="background:var(--warm-white);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;font-size:0.9rem">
+        <span style="color:var(--muted)">Subtotal</span><span id="mpesa-subtotal" style="font-weight:600">KSh 0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;font-size:0.9rem">
+        <span style="color:var(--muted)">Delivery</span><span id="mpesa-delivery" style="font-weight:600">KSh 300</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;border-top:1px solid var(--blush);padding-top:0.5rem;margin-top:0.5rem">
+        <span>Total</span><span id="mpesa-total" style="color:var(--deep-rose)">KSh 0</span>
+      </div>
+    </div>
+    <button onclick="confirmMpesaPayment()" style="width:100%;padding:1rem;background:linear-gradient(135deg,#27AE60,#1E8449);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:0.3s" id="mpesa-pay-btn">
+      💚 Send STK Push
+    </button>
+    <div id="mpesa-status" style="margin-top:1rem;text-align:center;font-size:0.88rem;display:none"></div>
+  </div>
+</div>
+
+<!-- ── Product Modal ─────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-label="Product details">
+  <div class="modal" id="product-modal">
+    <div class="modal-gallery">
+      <div class="modal-main-img" id="modal-main-img">
+        <img src="" alt="" id="modal-hero-img">
+        <video id="modal-hero-video" controls style="display:none;width:100%;height:100%;object-fit:contain;border-radius:12px"></video>
+      </div>
+      <div class="modal-thumbnails" id="modal-thumbs"></div>
+    </div>
+    <div class="modal-info">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+      <span class="modal-badge" id="modal-badge"></span>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-price-row">
+        <span class="modal-price" id="modal-price"></span>
+        <span class="modal-price-old" id="modal-price-old"></span>
+        <span class="modal-save" id="modal-save"></span>
+      </div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-option-label">Select Size</div>
+      <div class="size-options" id="modal-sizes"></div>
+      <div class="modal-option-label">Color</div>
+      <div class="color-options" id="modal-colors"></div>
+      <div class="modal-option-label">Quantity</div>
+      <div class="qty-row">
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <div class="qty-display" id="modal-qty">1</div>
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+        <span style="font-size:0.82rem;color:var(--muted)">In Stock</span>
+      </div>
+      <div class="modal-ctas">
+        <button class="btn-add-cart" onclick="addToCart()">🛍️ Add to Cart</button>
+        <button class="btn-wishlist-modal" id="modal-wishlist-btn" onclick="toggleModalWishlist()" aria-label="Add to wishlist">🤍</button>
+      </div>
+      <button class="btn-continue-browse" onclick="closeModal(); showSection('browse', null)">← Continue Browsing</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ──────────────────────────────── -->
+<script type="module" src="app.js"></script>
+
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import {
+  onAuthStateChanged, signOut, updateProfile
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  collection, getDocs, doc, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+let allProducts = [];
+let currentUser = null;
+
+// ── Sidebar toggle ────────────────────────────
+window.openSidebar = function() {
+  document.getElementById('dash-sidebar').classList.add('open');
+  document.getElementById('dash-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeSidebar = function() {
+  document.getElementById('dash-sidebar').classList.remove('open');
+  document.getElementById('dash-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// ── Section switching ─────────────────────────
+const sectionTitles = {
+  browse: 'Browse Products',
+  orders: 'My Orders',
+  wishlist: 'My Wishlist',
+  cart: 'My Cart',
+  profile: 'My Profile',
+};
+
+window.showSection = function(name, linkEl) {
+  // Hide all sections
+  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+
+  // Show target
+  const target = document.getElementById('section-' + name);
+  if (target) target.classList.add('active');
+
+  // Activate nav link
+  if (linkEl) {
+    linkEl.classList.add('active');
+  } else {
+    // Find link by data-section
+    document.querySelector(`.dash-nav a[data-section="${name}"]`)?.classList.add('active');
+  }
+
+  // Update topbar title
+  document.getElementById('topbar-title').textContent = sectionTitles[name] || '';
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 900) closeSidebar();
+
+  // Re-render section
+  if (name === 'wishlist') renderWishlistSection();
+  if (name === 'cart') renderCartSection();
+  if (name === 'orders') renderOrdersSection();
+
+  return false;
+};
+
+// ── Auth state ────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (!user) {
+    // Redirect to index if not logged in
+    window.location.href = 'index.html';
+    return;
+  }
+  updateUserUI(user);
+  await fetchProducts();
+  loadProfileData(user);
+  updateAllBadges();
+});
+
+function updateUserUI(user) {
+  const name = user.displayName || user.email?.split('@')[0] || 'You';
+  const initial = name[0].toUpperCase();
+
+  document.getElementById('su-avatar').textContent = initial;
+  document.getElementById('su-name').textContent = name;
+  document.getElementById('su-email').textContent = user.email || '';
+
+  // Profile section
+  document.getElementById('profile-avatar').textContent = initial;
+  document.getElementById('profile-display-name').textContent = name;
+  document.getElementById('profile-email-display').textContent = user.email || '';
+  document.getElementById('profile-name-input').value = user.displayName || '';
+  document.getElementById('profile-email-input').value = user.email || '';
+}
+
+// ── Sign out ──────────────────────────────────
+document.getElementById('signout-btn').addEventListener('click', async () => {
+  await signOut(auth);
+  window.location.href = 'index.html';
+});
+
+// ── Fetch all products ────────────────────────
+async function fetchProducts() {
+  try {
+    const snap = await getDocs(collection(db, 'products'));
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { console.error('Products fetch error', e); }
+}
+
+// ── Wishlist Section ──────────────────────────
+function renderWishlistSection() {
+  const wishlistIds = new Set(JSON.parse(localStorage.getItem('twr_wishlist') || '[]'));
+  const container = document.getElementById('wishlist-content');
+
+  if (!wishlistIds.size) {
+    container.innerHTML = `
+      <div class="orders-empty">
+        <div class="oe-icon">🤍</div>
+        <h3>Your wishlist is empty</h3>
+        <p style="margin-bottom:1.5rem">Heart products to save them here!</p>
+        <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+          Browse Products 🌸
+        </button>
+      </div>`;
+    return;
+  }
+
+  const wishlisted = allProducts.filter(p => wishlistIds.has(p.id));
+  if (!wishlisted.length) {
+    container.innerHTML = `<div class="orders-empty"><div class="oe-icon">🤍</div><h3>Loading wishlist…</h3></div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="wishlist-grid">
+    ${wishlisted.map(p => `
+      <div class="wish-card" onclick="openModal && openModal('${p.id}')">
+        <div class="wish-img">
+          <img src="${(p.images||[])[0]||''}" alt="${p.name||''}" loading="lazy" onerror="this.style.background='var(--petal)';this.src=''">
+        </div>
+        <div class="wish-info">
+          <div class="wish-name">${p.name||''}</div>
+          <div class="wish-price">KSh ${(p.price||0).toLocaleString()}</div>
+        </div>
+        <button class="wish-remove" onclick="event.stopPropagation(); removeFromWishlist('${p.id}')" aria-label="Remove from wishlist">✕</button>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+window.removeFromWishlist = function(id) {
+  const wl = new Set(JSON.parse(localStorage.getItem('twr_wishlist') || '[]'));
+  wl.delete(id);
+  localStorage.setItem('twr_wishlist', JSON.stringify([...wl]));
+  updateAllBadges();
+  renderWishlistSection();
+};
+
+// ── Cart Section ──────────────────────────────
+function renderCartSection() {
+  const cart = JSON.parse(localStorage.getItem('twr_cart') || '[]');
+  const container = document.getElementById('cart-section-content');
+
+  if (!cart.length) {
+    container.innerHTML = `
+      <div class="orders-empty">
+        <div class="oe-icon">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p style="margin-bottom:1.5rem">Add some gorgeous pieces to get started.</p>
+        <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+          Shop Now 🌸
+        </button>
+      </div>`;
+    return;
+  }
+
+  const subtotal = cart.reduce((s, i) => s + (i.price||0) * (i.qty||1), 0);
+  const delivery = subtotal >= 3000 ? 0 : 300;
+  const total = subtotal + delivery;
+
+  container.innerHTML = `
+    <div class="cart-layout">
+      <div class="cart-items-panel">
+        <div class="cart-panel-header">🛒 ${cart.length} Item${cart.length !== 1 ? 's' : ''}</div>
+        ${cart.map((item, idx) => `
+          <div class="dash-cart-item">
+            <img class="dci-img" src="${item.image||''}" alt="${item.name||''}" onerror="this.style.background='var(--petal)';this.src=''">
+            <div class="dci-info">
+              <div class="dci-name">${item.name||'Item'}</div>
+              <div class="dci-meta">${item.size ? `Size ${item.size}` : ''}${item.size && item.color ? ' · ' : ''}${item.color||''}</div>
+            </div>
+            <div class="dci-controls">
+              <button class="dci-qty-btn" onclick="dashCartQty(${idx}, -1)">−</button>
+              <div class="dci-qty">${item.qty||1}</div>
+              <button class="dci-qty-btn" onclick="dashCartQty(${idx}, 1)">+</button>
+            </div>
+            <div class="dci-price">KSh ${((item.price||0) * (item.qty||1)).toLocaleString()}</div>
+            <button class="dci-remove" onclick="dashCartRemove(${idx})" aria-label="Remove">🗑️</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="cart-summary-panel">
+        <div class="csp-title">Order Summary</div>
+        <div class="csp-row"><span style="color:var(--muted)">Subtotal</span><span>KSh ${subtotal.toLocaleString()}</span></div>
+        <div class="csp-row"><span style="color:var(--muted)">Delivery</span><span>${delivery === 0 ? '<span style="color:#27AE60">FREE</span>' : 'KSh 300'}</span></div>
+        <div class="csp-row total"><span>Total</span><span class="csp-total-val">KSh ${total.toLocaleString()}</span></div>
+        <button class="csp-checkout" onclick="checkout()">Proceed to Checkout 💳</button>
+        <p class="csp-note">${delivery === 0 ? '🎉 Free delivery on this order!' : `Add KSh ${(3000 - subtotal).toLocaleString()} more for free delivery`}</p>
+      </div>
+    </div>`;
+}
+
+window.dashCartQty = function(idx, delta) {
+  const cart = JSON.parse(localStorage.getItem('twr_cart') || '[]');
+  if (!cart[idx]) return;
+  cart[idx].qty = Math.max(1, (cart[idx].qty || 1) + delta);
+  localStorage.setItem('twr_cart', JSON.stringify(cart));
+  updateAllBadges();
+  renderCartSection();
+};
+
+window.dashCartRemove = function(idx) {
+  const cart = JSON.parse(localStorage.getItem('twr_cart') || '[]');
+  cart.splice(idx, 1);
+  localStorage.setItem('twr_cart', JSON.stringify(cart));
+  updateAllBadges();
+  renderCartSection();
+};
+
+// ── Orders Section ────────────────────────────
+async function renderOrdersSection() {
+  if (!currentUser) return;
+  const container = document.getElementById('orders-content');
+  container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted)">Loading orders…</div>`;
+  try {
+    const snap = await getDocs(collection(db, `users/${currentUser.uid}/orders`));
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!orders.length) {
+      container.innerHTML = `
+        <div class="orders-empty">
+          <div class="oe-icon">📦</div>
+          <h3>No orders yet</h3>
+          <p style="margin-bottom:1.5rem">When you place an order, it will appear here.</p>
+          <button onclick="showSection('browse', null)" style="padding:0.85rem 2rem;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;">
+            Start Shopping 🌸
+          </button>
+        </div>`;
+      document.getElementById('stat-orders').textContent = '0';
+      return;
+    }
+    document.getElementById('stat-orders').textContent = orders.length;
+    document.getElementById('orders-badge').textContent = orders.length;
+    document.getElementById('orders-badge').style.display = 'grid';
+
+    orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    container.innerHTML = orders.map(order => {
+      const date = order.createdAt?.seconds
+        ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })
+        : '—';
+      const statusClass = order.status === 'paid' ? 'paid' : order.status === 'cancelled' ? 'cancelled' : 'pending';
+      const statusLabel = order.status === 'paid' ? '✅ Paid' : order.status === 'cancelled' ? '❌ Cancelled' : '⏳ Pending';
+      const items = order.items || [];
+      return `
+        <div class="order-card">
+          <div class="order-header">
+            <div>
+              <div class="order-id">Order #${order.id.slice(-8).toUpperCase()}</div>
+              <div class="order-date">${date}</div>
+            </div>
+            <span class="order-status ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="order-items-row">
+            ${items.slice(0,5).map(item => `
+              <img class="order-item-thumb" src="${item.image||''}" alt="${item.name||''}" onerror="this.style.background='var(--petal)';this.src=''" title="${item.name||''}">
+            `).join('')}
+            ${items.length > 5 ? `<div style="width:54px;height:54px;border-radius:8px;background:var(--petal);display:grid;place-items:center;font-size:0.8rem;color:var(--muted)">+${items.length-5}</div>` : ''}
+          </div>
+          <div class="order-footer">
+            <span style="font-size:0.82rem;color:var(--muted)">${items.length} item${items.length !== 1 ? 's' : ''}</span>
+            <span class="order-total">KSh ${(order.total||0).toLocaleString()}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted)">Could not load orders. Please try again.</div>`;
+  }
+}
+
+// ── Profile save ──────────────────────────────
+window.saveProfile = async function() {
+  if (!currentUser) return;
+  const name = document.getElementById('profile-name-input').value.trim();
+  try {
+    await updateProfile(currentUser, { displayName: name });
+    updateUserUI(currentUser);
+    showToast('Profile updated! 🌸');
+  } catch (e) {
+    showToast('Could not update profile. Try again.', 'error');
+  }
+};
+
+window.saveDelivery = async function() {
+  if (!currentUser) return;
+  const phone = document.getElementById('profile-phone').value.trim();
+  const address = document.getElementById('profile-address').value.trim();
+  const city = document.getElementById('profile-city').value.trim();
+  try {
+    await setDoc(doc(db, `users/${currentUser.uid}/profile`, 'delivery'), { phone, address, city }, { merge: true });
+    showToast('Delivery info saved! 📍');
+  } catch (e) {
+    showToast('Could not save. Try again.', 'error');
+  }
+};
+
+async function loadProfileData(user) {
+  try {
+    const snap = await getDoc(doc(db, `users/${user.uid}/profile`, 'delivery'));
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.phone)   document.getElementById('profile-phone').value = d.phone;
+      if (d.address) document.getElementById('profile-address').value = d.address;
+      if (d.city)    document.getElementById('profile-city').value = d.city;
+    }
+  } catch(e) {}
+}
+
+// ── Badges ────────────────────────────────────
+function updateAllBadges() {
+  const cart = JSON.parse(localStorage.getItem('twr_cart') || '[]');
+  const wishlist = new Set(JSON.parse(localStorage.getItem('twr_wishlist') || '[]'));
+  const cartCount = cart.reduce((s, i) => s + (i.qty||1), 0);
+
+  document.getElementById('cart-badge-nav').textContent = cartCount;
+  document.getElementById('topbar-cart-count').textContent = cartCount;
+  document.getElementById('wishlist-badge').textContent = wishlist.size;
+  document.getElementById('stat-wishlist').textContent = wishlist.size;
+  document.getElementById('stat-cart').textContent = cartCount;
+}
+
+// Patch localStorage to react to cart/wishlist changes from app.js
+const _setItem = localStorage.setItem.bind(localStorage);
+localStorage.setItem = function(key, value) {
+  _setItem(key, value);
+  if (key === 'twr_cart' || key === 'twr_wishlist') updateAllBadges();
+};
+
+updateAllBadges();
+
+// ── Toast helper ──────────────────────────────
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  if (!tc) return;
+  const t = document.createElement('div');
+  t.className = 'toast show';
+  t.textContent = msg;
+  if (type === 'error') t.style.background = '#E74C3C';
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// Expose for app.js checkout bridge
+window.openCart = function() { showSection('cart', null); };
+</script>
+
+<script>
+  // Compatibility shim — app.js expects these
+  function filterByCategory(cat) {
+    if (window.renderProducts) renderProducts(cat);
+  }
+  window.filterByCategory = filterByCategory;
+
+  // Redirect product grid rendering into #dash-product-grid
+  document.addEventListener('DOMContentLoaded', () => {
+    // If app.js populates #product-grid, we mirror it here
+    // Or override renderProducts target in app.js via this override
+    const observer = new MutationObserver(() => {
+      const src = document.getElementById('product-grid');
+      const dest = document.getElementById('dash-product-grid');
+      if (src && dest && src.innerHTML && dest.innerHTML !== src.innerHTML) {
+        dest.innerHTML = src.innerHTML;
+      }
+    });
+    const src = document.getElementById('product-grid');
+    if (src) observer.observe(src, { childList: true, subtree: true });
+  });
+</script>
+
+<!-- Hidden product grid for app.js to populate (it targets #product-grid) -->
+<div style="display:none">
+  <div class="filters" id="product-filters" style="display:none"></div>
+  <div class="product-grid" id="product-grid"></div>
+</div>
+
+</body>
+</html>

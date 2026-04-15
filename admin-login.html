@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Trift With Ruth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blush:     #F9C4D2;
+      --rose:      #E8779A;
+      --deep-rose: #C04F78;
+      --warm-white:#FFF8F5;
+      --charcoal:  #2C2230;
+      --muted:     #9A8A95;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    body {
+      font-family:'DM Sans',sans-serif;
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--charcoal);
+      overflow:hidden; position:relative;
+    }
+    body::before {
+      content:''; position:fixed; top:-120px; right:-120px;
+      width:420px; height:420px; border-radius:50%;
+      background:radial-gradient(circle,rgba(232,119,154,0.18),transparent 70%);
+      pointer-events:none;
+    }
+    body::after {
+      content:''; position:fixed; bottom:-100px; left:-100px;
+      width:360px; height:360px; border-radius:50%;
+      background:radial-gradient(circle,rgba(237,213,243,0.1),transparent 70%);
+      pointer-events:none;
+    }
+
+    .petal { position:fixed; border-radius:50%; background:rgba(249,196,210,0.2); pointer-events:none; animation:float linear infinite; }
+    @keyframes float {
+      0%   { transform:translateY(100vh) rotate(0deg); opacity:0; }
+      10%  { opacity:1; }
+      90%  { opacity:1; }
+      100% { transform:translateY(-10vh) rotate(720deg); opacity:0; }
+    }
+
+    /* Overlay shown while checking existing auth session */
+    .auth-checking {
+      position:fixed; inset:0; background:var(--charcoal);
+      display:grid; place-items:center; z-index:9999;
+      transition:opacity 0.3s ease;
+    }
+    .auth-checking.hidden { opacity:0; pointer-events:none; }
+    .checking-spinner {
+      width:36px; height:36px;
+      border:3px solid rgba(232,119,154,0.3); border-top-color:var(--rose);
+      border-radius:50%; animation:spin 0.7s linear infinite;
+    }
+
+    .login-card {
+      background:rgba(255,248,245,0.97);
+      border-radius:24px; padding:3rem 2.5rem 2.5rem;
+      width:100%; max-width:420px;
+      box-shadow:0 30px 80px rgba(44,34,48,0.5),0 0 0 1px rgba(232,119,154,0.12),inset 0 1px 0 rgba(255,255,255,0.8);
+      position:relative; z-index:10;
+      animation:slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(40px) scale(0.96); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    .brand { text-align:center; margin-bottom:2rem; }
+    .brand-icon {
+      width:64px; height:64px; border-radius:18px;
+      background:linear-gradient(135deg,var(--rose),var(--deep-rose));
+      display:grid; place-items:center; font-size:1.8rem;
+      margin:0 auto 1rem;
+      box-shadow:0 8px 24px rgba(192,79,120,0.35);
+    }
+    .brand-name { font-family:'Playfair Display',serif; font-size:1.55rem; font-weight:800; color:var(--charcoal); }
+    .brand-sub  { font-size:0.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; margin-top:0.3rem; }
+
+    .form-group { display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1.1rem; }
+    .form-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); }
+    .input-wrap { position:relative; }
+    .input-icon { position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-size:1rem; pointer-events:none; opacity:0.45; }
+
+    .form-input {
+      width:100%; padding:0.85rem 2.8rem 0.85rem 2.8rem;
+      border:2px solid var(--blush); border-radius:12px;
+      font-size:0.95rem; font-family:'DM Sans',sans-serif;
+      color:var(--charcoal); background:#fff; outline:none;
+      transition:var(--transition);
+    }
+    .form-input:focus { border-color:var(--rose); box-shadow:0 0 0 4px rgba(232,119,154,0.12); }
+
+    .toggle-pw {
+      position:absolute; right:1rem; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; font-size:1.05rem;
+      opacity:0.45; transition:opacity 0.2s; padding:0; line-height:1;
+    }
+    .toggle-pw:hover { opacity:0.85; }
+
+    .error-msg {
+      display:none; background:#FDECEA; color:#C0392B;
+      border:1px solid #FBBDBA; border-radius:10px;
+      padding:0.65rem 1rem; font-size:0.84rem; font-weight:500;
+      margin-bottom:1rem; animation:shake 0.4s ease;
+    }
+    .error-msg.show { display:block; }
+    @keyframes shake {
+      0%,100% { transform:translateX(0); }
+      20%,60%  { transform:translateX(-6px); }
+      40%,80%  { transform:translateX(6px); }
+    }
+
+    .btn-login {
+      width:100%; padding:0.95rem; border:none; border-radius:12px;
+      font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:700; color:#fff;
+      background:linear-gradient(135deg,var(--rose),var(--deep-rose));
+      cursor:pointer; transition:var(--transition);
+      box-shadow:0 6px 20px rgba(192,79,120,0.35);
+      margin-top:0.5rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;
+    }
+    .btn-login:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(192,79,120,0.45); }
+    .btn-login:active { transform:translateY(0); }
+    .btn-login:disabled { opacity:0.7; pointer-events:none; }
+
+    .spinner {
+      display:none; width:18px; height:18px;
+      border:2px solid rgba(255,255,255,0.3); border-top-color:#fff;
+      border-radius:50%; animation:spin 0.7s linear infinite;
+    }
+    .btn-login.loading .spinner { display:block; }
+    .btn-login.loading .btn-text { display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .login-footer { text-align:center; margin-top:1.5rem; font-size:0.75rem; color:var(--muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Shown while Firebase checks for an existing session (prevents flash) -->
+  <div class="auth-checking" id="auth-checking">
+    <div class="checking-spinner"></div>
+  </div>
+
+  <div class="petal" style="left:8%;width:8px;height:8px;animation-duration:12s;animation-delay:0s"></div>
+  <div class="petal" style="left:28%;width:5px;height:5px;animation-duration:9s;animation-delay:3s"></div>
+  <div class="petal" style="left:54%;width:4px;height:4px;animation-duration:14s;animation-delay:1.5s"></div>
+  <div class="petal" style="left:74%;width:10px;height:10px;animation-duration:10s;animation-delay:5s"></div>
+  <div class="petal" style="left:90%;width:6px;height:6px;animation-duration:11s;animation-delay:2s"></div>
+
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-icon">🌸</div>
+      <div class="brand-name">Trift with Ruth</div>
+      <div class="brand-sub">Admin Console</div>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="form-group">
+      <label class="form-label" for="email">Email</label>
+      <div class="input-wrap">
+        <span class="input-icon">✉️</span>
+        <input class="form-input" type="email" id="email"
+          placeholder="admin@example.com" autocomplete="email" autofocus>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔑</span>
+        <input class="form-input" type="password" id="password"
+          placeholder="Enter your password" autocomplete="current-password">
+        <button class="toggle-pw" id="toggle-pw" type="button">👁️</button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="login-btn" type="button">
+      <div class="spinner"></div>
+      <span class="btn-text">Sign In to Admin</span>
+    </button>
+
+    <div class="login-footer">Protected area — authorised personnel only</div>
+  </div>
+
+<script type="module">
+// ─── Firebase imports ─────────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// ─── Firebase config ──────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCKdCdBCY4_1xMgOyh_gnM-DalsZjykaEE",
+  authDomain: "trift-with-ruth.firebaseapp.com",
+  projectId: "trift-with-ruth",
+  storageBucket: "trift-with-ruth.firebasestorage.app",
+  messagingSenderId: "397109844841",
+  appId: "1:397109844841:web:0d900711712b5aae777bf8",
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ─── Auth observer ────────────────────────────────────────────────────────────
+// Runs once on page load. If there's already a valid admin session, redirect
+// straight to the panel. If user is logged in but NOT an admin, sign them out.
+// In all other cases, hide the loading overlay and show the login form.
+onAuthStateChanged(auth, async (user) => {
+  const overlay = document.getElementById('auth-checking');
+
+  if (user) {
+    try {
+      const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+      if (adminSnap.exists()) {
+        // Existing admin session — go straight to the panel
+        window.location.href = 'admin.html';
+        return;
+      }
+      // Logged in but not an admin — clear the session
+      await signOut(auth);
+    } catch (err) {
+      console.error('Session check error:', err);
+      await signOut(auth);
+    }
+  }
+
+  // No valid admin session — reveal the login form
+  overlay.classList.add('hidden');
+});
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+const emailEl    = document.getElementById('email');
+const passwordEl = document.getElementById('password');
+const loginBtn   = document.getElementById('login-btn');
+const errorMsg   = document.getElementById('error-msg');
+const togglePw   = document.getElementById('toggle-pw');
+
+// ─── Toggle password visibility ───────────────────────────────────────────────
+togglePw.addEventListener('click', () => {
+  const show = passwordEl.type === 'password';
+  passwordEl.type = show ? 'text' : 'password';
+  togglePw.textContent = show ? '🙈' : '👁️';
+});
+
+// ─── Show error ───────────────────────────────────────────────────────────────
+function showError(msg) {
+  errorMsg.textContent = '❌ ' + msg;
+  errorMsg.classList.add('show');
+}
+
+// ─── Login ────────────────────────────────────────────────────────────────────
+async function attemptLogin() {
+  errorMsg.classList.remove('show');
+  const email    = emailEl.value.trim();
+  const password = passwordEl.value;
+
+  if (!email || !password) {
+    showError('Please enter your email and password.');
+    return;
+  }
+
+  loginBtn.classList.add('loading');
+  loginBtn.disabled = true;
+
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+
+    // Verify the user exists in the admins collection
+    const adminSnap = await getDoc(doc(db, 'admins', credential.user.uid));
+    if (!adminSnap.exists()) {
+      await signOut(auth);
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
+      showError('You do not have admin access.');
+      return;
+    }
+
+    // Admin confirmed — the onAuthStateChanged observer above will redirect
+    // to admin.html automatically. Nothing else needed here.
+
+  } catch (err) {
+    loginBtn.classList.remove('loading');
+    loginBtn.disabled = false;
+    const code = err.code;
+    if (['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-credential'].includes(code)) {
+      showError('Incorrect email or password.');
+    } else if (code === 'auth/invalid-email') {
+      showError('Please enter a valid email address.');
+    } else if (code === 'auth/too-many-requests') {
+      showError('Too many failed attempts. Please try again later.');
+    } else if (code === 'auth/network-request-failed') {
+      showError('Network error. Check your connection.');
+    } else {
+      showError(err.message);
+    }
+  }
+}
+
+loginBtn.addEventListener('click', attemptLogin);
+[emailEl, passwordEl].forEach(el =>
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); })
+);
+</script>
+</body>
+</html>
